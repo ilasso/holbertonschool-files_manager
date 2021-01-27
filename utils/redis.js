@@ -30,15 +30,15 @@ class RedisClient {
   } // constructor
 
   isAlive() {
-    return new Promise((resolve, reject) => {
+    /* return new Promise((resolve, reject) => {
       this._client.on('connect', (err) => {
         const blerror = false;
         if (err) reject(blerror);
         resolve(true);
       });
     }); // promise
-
-    // return this._client.connected;
+    */
+    return this._client.connected;
   } // isAlive
 
   async get(key) {
