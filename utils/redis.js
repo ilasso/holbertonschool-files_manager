@@ -24,6 +24,9 @@ class RedisClient {
     this.getAsync = promisify(this._client.get).bind(this._client);
     this.setAsync = promisify(this._client.set).bind(this._client);
     this.delAsync = promisify(this._client.del).bind(this._client);
+    this._client.on('ready', (error) => {
+      if (!error) console.log('Redis client connected to the server');
+    });
     this._client.on('error', (error) => {
       if (error) console.log(`Redis client not connected to the server: ${error}`);
     });
