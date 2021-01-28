@@ -21,7 +21,9 @@ POST /users should create a new user in DB:
 */
 
 import sha1 from 'sha1';
+import { ObjectId } from 'mongodb';
 import dbClient from '../utils/db';
+import redisClient from '../utils/redis';
 
 class UsersController {
   static async postNew(request, response) {
@@ -38,6 +40,18 @@ class UsersController {
     const newUser = await dbClient.db.collection('users').findOne({ email });
 
     return response.status(201).send({ id: newUser._id, email });
+  }
+
+  static async getMe(request, response) {
+    const token = request.header('X-token');
+
+    const uid = await redisClient.get(`auth_${token}`);
+
+    if (!uid) return response.status(401).json({ error: 'Unauthorized' });
+
+    const user = await dbClient.db.collection('users').findOne({ _id: ObjectId(uid) });
+
+    return response.json({ email: user.email, id: user._id });
   }
 }
 
