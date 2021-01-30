@@ -150,17 +150,7 @@ class FilesController {
     // validate user in mongo
     const user = await dbClient.db.collection('users').findOne({ _id: ObjectId(uid) });
     if (!user) return response.status(401).send({ error: 'Unauthorized' });
-    let QparentId = request.query.parentId || 0;
-    if (QparentId === '0') QparentId = 0;
-    if (QparentId !== 0) {
-      try {
-        QparentId = ObjectId(QparentId);
-      } catch (error) {
-        return response.status(401).send({ error: 'Unauthorized' });
-      }
-      const folder = await dbClient.files.findOne({ _id: ObjectId(QparentId) });
-      if (!folder || folder.type !== 'folder') return response.status(200).send([]);
-    }
+    const QparentId = request.query.parentId || 0;
 
     const Qpage = request.query.page;
 
