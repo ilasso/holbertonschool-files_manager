@@ -112,12 +112,14 @@ class FilesController {
     const file = await dbClient.db.collection('files').findOne({ _id: ObjectId(id) });
     if (!file) return response.status(404).json({ error: 'Not found' });
 
-    /* file.id = file._id;
-    delete file._id;
-    delete file.data;
-    delete file.path; */
-    // return response.status(200).send('ok');
-    return response.status(200).send(file);
+    return response.status(200).send({
+      id: file._id,
+      userId: file.userId,
+      name: file.name,
+      type: file.type,
+      isPublic: file.isPublic,
+      parentId: file.parentId,
+    });
   }
 
   static async getIndex(request, response) {
