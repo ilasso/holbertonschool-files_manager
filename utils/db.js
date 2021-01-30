@@ -27,6 +27,23 @@ class DBClient {
     const countFiles = await this.db.collection('files').countDocuments();
     return countFiles;
   }
+
+  async aggregateFiles(parentId, page = 1) {
+    const cursor = await this.db.collection('files').aggregate([
+      { $match: { parentId: Number(parentId) } },
+      { $skip: (page - 1) * 20 },
+      { $limit: 20 },
+    ]).toArray();
+    const files = [];
+    cursor.forEach(({
+      _id, userId, name, type, isPublic, parentId,
+    }) => {
+      files.push({
+        id: _id, userId, name, type, isPublic, parentId,
+      });
+    });
+    return files;
+  }
 }
 
 const dbclient = new DBClient();

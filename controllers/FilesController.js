@@ -99,6 +99,64 @@ class FilesController {
       parentId: fileDataDb.parentId,
     });
   }
+
+  static async getShow(request, response) {
+    const { id } = request.params;
+
+    const token = request.header('X-Token');
+
+    const user = await redisClient.get(`auth_${token}`);
+    console.log(user);
+    if (!user) return response.status(401).send({ error: 'Unauthorized' });
+
+    const file = await dbClient.db.collection('files').findOne({ _id: ObjectId(id) });
+    if (!file) return response.status(404).json({ error: 'Not found' });
+
+    /* file.id = file._id;
+    delete file._id;
+    delete file.data;
+    delete file.path; */
+    // return response.status(200).send('ok');
+    return response.status(200).send(file);
+  }
+
+  static async getIndex(request, response) {
+    /*
+        should retrieve all users file documents for a specific parentId and with pagination:
+        retrieve the user based on token:
+            if not found, return an error Unauthorized with status 401
+
+        Based in query parameters <parentId> and <page>, return the list of file document
+            parentId:
+                no validation of partentId needed- if the parentId is not linked to any user forder,
+                return and pemtpy list
+                by default, partenId is equial to 0 = the root
+            pagination:
+                eacch page should be 20 items max
+                <page> query parameter starts at 0 for the first page. if equals to 1, it means it's
+                the second page( corm the 20th tode 40th), etc..
+                pagination can be done directly by the aggregate of MongoDB
+      */
+
+    // retrieve the user based on token:
+    const token = request.header('X-Token');
+    const key = `auth_${token}`;
+    const uid = await redisClient.get(key);
+
+    if (!uid) return response.status(401).json({ error: 'Unauthorized' });
+
+    // validate user in mongo
+    const user = await dbClient.db.collection('users').findOne({ _id: ObjectId(uid) });
+    if (!user) return response.status(401).send({ error: 'Unauthorized' });
+    const QparentId = request.query.parentId || 0;
+    const Qpage = request.query.page;
+
+    // obtener todos los files que tengan un partentId en mongo
+
+    const paginate = await dbClient.aggregateFiles(Number(QparentId), Qpage);
+
+    return response.status(200).send(paginate);
+  }
 }
 
 export default FilesController;
